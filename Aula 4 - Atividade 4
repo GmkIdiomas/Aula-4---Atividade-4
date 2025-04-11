@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tradução de Palavras</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fefefe;
+      text-align: center;
+      margin: 0;
+      padding: 5%;
+      box-sizing: border-box;
+    }
+    .card {
+      background: #f4f4f4;
+      padding: 5vw;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      text-align: center;
+      width: 95%;
+      max-width: 600px;
+      min-height: 320px;
+      margin: 0 auto;
+    }
+    h2 {
+      font-size: 22px;
+    }
+    input {
+      padding: 10px;
+      width: 80%;
+      max-width: 300px;
+      font-size: 16px;
+      margin-bottom: 15px;
+    }
+    button {
+      padding: 10px 18px;
+      font-size: 15px;
+      margin: 5px;
+      cursor: pointer;
+      border: none;
+      background-color: #4CAF50;
+      color: white;
+      border-radius: 5px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .correct { color: green; font-weight: bold; }
+    .incorrect { color: red; font-weight: bold; }
+    #mensagem {
+      margin-top: 10px;
+      font-size: 18px;
+    }
+    #revisarLista {
+      margin-top: 30px;
+      text-align: left;
+      font-size: 16px;
+      padding: 10px;
+    }
+    .botoes-finais {
+      margin-top: 20px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2 id="portugues">Palavra em português</h2>
+    <input type="text" id="resposta" placeholder="Digite em inglês" />
+    <br />
+    <button onclick="verificarResposta()">Enviar</button>
+    <button id="ouvirBtn" onclick="ouvirPalavra()" style="display:none;">🔊 Ouvir frase</button>
+    <button onclick="naoLembro()">Não lembro</button>
+    <p style="font-size: 14px; color: #aa0000; margin-bottom: 8px;"><strong>Use contrações:</strong> Ex: “He's” em vez de “He is”; a forma contraída de "they are" é “they're”).</p>
+    <p style="font-size: 14px; color: #aa0000; margin-bottom: 8px;"><strong>Dica:</strong> Também é possível dizer “He isn’t” em vez de “He’s not”, assim como "They aren't" em vez de "They're not", mas é menos comum no inglês falado.</p>
+    <p style="font-size: 14px; color: #aa0000; margin-bottom: 8px;"><strong>Atenção:</strong> No passado, as formas contraídas são “wasn’t” e “weren’t”.</p>
+    <p id="mensagem"></p>
+  </div>
+
+  <div id="revisarLista"></div>
+
+  <script>
+    const palavrasOriginal = [
+      { pt: "Eu não estou com fome", en: "I'm not hungry" },
+      { pt: "Eles não estavam com sede", en: "They weren't thirsty" },
+      { pt: "Ela está entediada", en: "She's bored" },
+      { pt: "Eles estavam com raiva", en: "They were angry" },
+      { pt: "Eu não estou com sede", en: "I'm not thirsty" },
+      { pt: "Ele está com medo", en: "He's scared" },
+      { pt: "Ela não estava em casa", en: "She wasn't at home" },
+      { pt: "Eu estava no trabalho", en: "I was at work" },
+      { pt: "Eles não estão cansados", en: "They're not tired" },
+      { pt: "Ele não está com raiva", en: "He's not angry" },
+      { pt: "Ela está com pressa", en: "She's in a hurry" },
+      { pt: "Eles não estão prontos", en: "They're not ready" },
+      { pt: "Eu não estou pronto", en: "I'm not ready" },
+      { pt: "Ele está ocupado", en: "He's busy" },
+      { pt: "Eu não estou com frio", en: "I'm not cold" },
+      { pt: "Ele está dormindo", en: "He's sleeping" },
+      { pt: "Eles estão ocupados", en: "They're busy" },
+      { pt: "Eles não estavam perdidos", en: "They weren't lost" },
+      { pt: "Ela está vindo", en: "She's coming" },
+      { pt: "Eu não estava perdido", en: "I wasn't lost" },
+      { pt: "Ela não estava doente", en: "She wasn't sick" },
+      { pt: "Ele é um professor", en: "He's a teacher" },
+      { pt: "Eles estão em casa", en: "They're at home" },
+      { pt: "Eu sou um estudante", en: "I'm a student" },
+      { pt: "Ela está cansada", en: "She's tired" },
+      { pt: "Eu estava triste", en: "I was sad" },
+      { pt: "Eles estavam com fome", en: "They were hungry" },
+      { pt: "Ele não está feliz", en: "He's not happy" }
+    ];
+
+    let palavras = [...palavrasOriginal];
+    let revisar = [];
+    let indice = 0;
+    let tentativas = 0;
+
+    function embaralhar(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    embaralhar(palavras);
+
+    function mostrarPalavra() {
+      document.getElementById("portugues").innerText = palavras[indice].pt;
+      document.getElementById("resposta").value = "";
+      document.getElementById("mensagem").innerText = "";
+      document.getElementById("resposta").focus();
+      document.getElementById("ouvirBtn").style.display = "none";
+    }
+
+    function verificarResposta() {
+      const resposta = document.getElementById("resposta").value.trim().toLowerCase();
+      const correta = palavras[indice].en.toLowerCase();
+
+      if (resposta === correta) {
+        document.getElementById("mensagem").innerHTML = "<span class='correct'>Correto!</span>";
+        document.getElementById("ouvirBtn").style.display = "inline-block";
+        setTimeout(() => {
+          indice++;
+          tentativas = 0;
+          if (indice < palavras.length) {
+            mostrarPalavra();
+          } else {
+            mostrarRevisar();
+          }
+        }, 1000);
+      } else {
+        tentativas++;
+        if (tentativas === 1) {
+          document.getElementById("mensagem").innerHTML = "<span class='incorrect'>Tente novamente.</span>";
+        } else {
+          document.getElementById("mensagem").innerHTML = `<span class='incorrect'>A palavra correta é: <strong>${correta}</strong></span>`;
+          revisar.push(palavras[indice]);
+          setTimeout(() => {
+            indice++;
+            tentativas = 0;
+            if (indice < palavras.length) {
+              mostrarPalavra();
+            } else {
+              mostrarRevisar();
+            }
+          }, 2000);
+        }
+      }
+    }
+
+    function ouvirPalavra() {
+      const utterance = new SpeechSynthesisUtterance(palavras[indice].en);
+      utterance.lang = "en-US";
+      speechSynthesis.speak(utterance);
+    }
+
+    function naoLembro() {
+      revisar.push(palavras[indice]);
+      indice++;
+      if (indice < palavras.length) {
+        mostrarPalavra();
+      } else {
+        mostrarRevisar();
+      }
+    }
+
+    function mostrarRevisar() {
+      let html = "<div id='telaFinal'>";
+      html += "<h2>Você completou todas as frases!</h2>";
+
+      if (revisar.length > 0) {
+        html += "<h3>Revisar:</h3><ul>";
+        revisar.forEach(p => {
+          html += `<li>${p.pt} → <strong>${p.en}</strong></li>`;
+        });
+        html += "</ul>";
+      } else {
+        html += "<p>Parabéns, você não marcou nenhuma frase para revisar!</p>";
+      }
+
+      html += `<p><strong>Envie o resultado p/ seu(a) professor(a)</strong></p>`;
+      html += "</div>";
+
+      html += `
+        <div class="botoes-finais">
+          <button onclick="estudarNovamente()">🔁 Estudar novamente</button>
+          ${revisar.length > 0 ? `<button onclick="revisarErros()">🔁 Revisar o que eu errei</button>` : ''}
+        </div>
+      `;
+
+      document.querySelector(".card").style.display = "none";
+      document.getElementById("revisarLista").innerHTML = html;
+    }
+
+    function estudarNovamente() {
+      palavras = [...palavrasOriginal];
+      revisar = [];
+      indice = 0;
+      tentativas = 0;
+      embaralhar(palavras);
+      document.querySelector(".card").style.display = "block";
+      document.getElementById("revisarLista").innerHTML = "";
+      mostrarPalavra();
+    }
+
+    function revisarErros() {
+      if (revisar.length > 0) {
+        palavras = [...revisar];
+        revisar = [];
+        indice = 0;
+        tentativas = 0;
+        embaralhar(palavras);
+        document.querySelector(".card").style.display = "block";
+        document.getElementById("revisarLista").innerHTML = "";
+        mostrarPalavra();
+      }
+    }
+
+    document.getElementById("resposta").addEventListener("input", function () {
+      const resposta = this.value.trim().toLowerCase();
+      const correta = palavras[indice].en.toLowerCase();
+      if (resposta === correta) {
+        document.getElementById("ouvirBtn").style.display = "inline-block";
+      }
+    });
+
+    document.getElementById("resposta").addEventListener("keydown", function(event) {
+      if (event.key === "Enter") {
+        verificarResposta();
+      }
+    });
+
+    mostrarPalavra();
+  </script>
+</body>
+</html>
